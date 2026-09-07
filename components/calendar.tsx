@@ -8,6 +8,7 @@ import {
   daysBetween,
   formatMonthTitle,
   getMonthGrid,
+  getWeekdayFromDateKey,
 } from "@/lib/dates";
 import { CalendarDay } from "@/components/calendar-day";
 import { LockedDay } from "@/components/locked-day";
@@ -16,6 +17,7 @@ import { PastDayPopover } from "@/components/past-day-popover";
 interface CalendarProps {
   todayKey: string;
   initialMonth: { year: number; month: number };
+  scheduledDays?: string[];
   onSelectPast?: (dateKey: string) => void;
   onSelectToday: () => void;
 }
@@ -23,6 +25,7 @@ interface CalendarProps {
 export function Calendar({
   todayKey,
   initialMonth,
+  scheduledDays,
   onSelectToday,
 }: CalendarProps) {
   const [view, setView] = useState(initialMonth);
@@ -110,6 +113,10 @@ export function Calendar({
           if (!cell) {
             return <div key={`blank-${index}`} aria-hidden="true" />;
           }
+          const hasClasses = scheduledDays?.includes(
+            getWeekdayFromDateKey(cell.key),
+          );
+
           if (cell.key === todayKey) {
             return (
               <CalendarDay
@@ -117,6 +124,7 @@ export function Calendar({
                 day={cell.day}
                 dateKey={cell.key}
                 isToday
+                hasClasses={hasClasses}
                 onClick={handleDayClick}
               />
             );
@@ -128,6 +136,7 @@ export function Calendar({
                 day={cell.day}
                 dateKey={cell.key}
                 isToday={false}
+                hasClasses={hasClasses}
                 onClick={handleDayClick}
               />
             );
@@ -137,6 +146,7 @@ export function Calendar({
               key={cell.key}
               day={cell.day}
               dateKey={cell.key}
+              hasClasses={hasClasses}
               onClick={handleDayClick}
             />
           );

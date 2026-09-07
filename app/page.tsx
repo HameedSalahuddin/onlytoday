@@ -3,6 +3,11 @@ import { redirect } from "next/navigation";
 import { getSession, readTimezone } from "@/lib/auth";
 import { formatTodayHeading, getServerToday, toDateKey } from "@/lib/dates";
 import { getTasksForUser } from "@/lib/tasks";
+import {
+  getActiveSemesterForUser,
+  getScheduledDaysForUser,
+  getTodayScheduleForUser,
+} from "@/lib/college";
 import { AppShell } from "@/components/app-shell";
 import { ToastProvider } from "@/components/toast";
 import { TimezoneSync } from "@/components/timezone-sync";
@@ -19,6 +24,12 @@ export default async function Home() {
   const heading = formatTodayHeading(todayKey);
   const tasks = await getTasksForUser(session.userId, today);
 
+  const [schedule, activeSemester, scheduledDays] = await Promise.all([
+    getTodayScheduleForUser(session.userId, today),
+    getActiveSemesterForUser(session.userId),
+    getScheduledDaysForUser(session.userId),
+  ]);
+
   return (
     <ToastProvider>
       <TimezoneSync />
@@ -30,6 +41,9 @@ export default async function Home() {
         weekday={heading.weekday}
         fullDate={heading.fullDate}
         initialTasks={tasks}
+        initialSchedule={schedule}
+        activeSemester={activeSemester}
+        scheduledDays={scheduledDays}
       />
     </ToastProvider>
   );

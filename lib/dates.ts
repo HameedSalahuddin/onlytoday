@@ -177,3 +177,33 @@ export function formatHistoryDate(dateKey: string, todayKey: string): string {
     timeZone: "UTC",
   }).format(date);
 }
+
+export const WEEKDAYS = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
+] as const;
+
+export type Weekday = (typeof WEEKDAYS)[number];
+
+const DAY_INDEX_TO_WEEKDAY: Record<number, Weekday> = {
+  0: "SUNDAY",
+  1: "MONDAY",
+  2: "TUESDAY",
+  3: "WEDNESDAY",
+  4: "THURSDAY",
+  5: "FRIDAY",
+  6: "SATURDAY",
+};
+
+export function getWeekdayFromDate(date: Date): Weekday {
+  return DAY_INDEX_TO_WEEKDAY[date.getUTCDay()];
+}
+
+export function getWeekdayFromDateKey(dateKey: string): Weekday {
+  return getWeekdayFromDate(parseDateKey(dateKey));
+}

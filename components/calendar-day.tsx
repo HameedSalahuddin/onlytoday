@@ -6,10 +6,17 @@ interface CalendarDayProps {
   day: number;
   dateKey: string;
   isToday: boolean;
+  hasClasses?: boolean;
   onClick: (dateKey: string, element?: HTMLElement) => void;
 }
 
-export function CalendarDay({ day, dateKey, isToday, onClick }: CalendarDayProps) {
+export function CalendarDay({
+  day,
+  dateKey,
+  isToday,
+  hasClasses,
+  onClick,
+}: CalendarDayProps) {
   return (
     <button
       type="button"
@@ -24,13 +31,16 @@ export function CalendarDay({ day, dateKey, isToday, onClick }: CalendarDayProps
     >
       <span
         className={cn(
-          "flex h-8 w-8 items-center justify-center rounded-lg text-sm transition-colors duration-150",
+          "relative flex h-8 w-8 items-center justify-center rounded-lg text-sm transition-colors duration-150",
           isToday
             ? "bg-accent font-semibold text-bg"
             : "text-text2 hover:text-text",
         )}
       >
         {day}
+        {hasClasses && !isToday && (
+          <span className="absolute bottom-1 h-1 w-1 rounded-full bg-accent/60" />
+        )}
       </span>
     </button>
   );

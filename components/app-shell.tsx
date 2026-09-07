@@ -2,12 +2,14 @@
 
 import { useMemo, useState } from "react";
 import type { TaskDTO } from "@/lib/tasks";
+import type { SemesterDTO, TimetableEntryDTO } from "@/lib/college";
 import { getCurrentMonth } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { Header } from "@/components/header";
 import { TodayPanel } from "@/components/today-panel";
 import { HistoryView } from "@/components/history-view";
 import { Calendar } from "@/components/calendar";
+import { TimetableSetupModal } from "@/components/timetable-setup-modal";
 
 interface AppShellProps {
   email: string;
@@ -16,6 +18,9 @@ interface AppShellProps {
   weekday: string;
   fullDate: string;
   initialTasks: TaskDTO[];
+  initialSchedule: TimetableEntryDTO[];
+  activeSemester: SemesterDTO | null;
+  scheduledDays: string[];
 }
 
 export function AppShell({
@@ -25,13 +30,20 @@ export function AppShell({
   weekday,
   fullDate,
   initialTasks,
+  initialSchedule,
+  activeSemester,
+  scheduledDays,
 }: AppShellProps) {
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
+  const [isTimetableModalOpen, setIsTimetableModalOpen] = useState(false);
   const initialMonth = useMemo(() => getCurrentMonth(new Date(), tz), [tz]);
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header email={email} />
+      <Header
+        email={email}
+        onOpenTimetable={() => setIsTimetableModalOpen(true)}
+      />
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-8 sm:px-10 lg:flex-row lg:gap-0 lg:pt-10">
         <main className="flex-1">
           <div className={cn(selectedDateKey && "hidden")}>
@@ -41,6 +53,9 @@ export function AppShell({
               weekday={weekday}
               fullDate={fullDate}
               initialTasks={initialTasks}
+              schedule={initialSchedule}
+              hasSemester={Boolean(activeSemester)}
+              onOpenTimetable={() => setIsTimetableModalOpen(true)}
             />
           </div>
           {selectedDateKey && (
@@ -57,11 +72,18 @@ export function AppShell({
           <Calendar
             todayKey={todayKey}
             initialMonth={initialMonth}
+            scheduledDays={scheduledDays}
             onSelectPast={setSelectedDateKey}
             onSelectToday={() => setSelectedDateKey(null)}
           />
         </aside>
       </div>
+
+      <TimetableSetupModal
+        isOpen={isTimetableModalOpen}
+        onClose={() => setIsTimetableModalOpen(false)}
+        activeSemester={activeSemester}
+      />
     </div>
   );
 }

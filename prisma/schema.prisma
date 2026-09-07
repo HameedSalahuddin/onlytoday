@@ -8,12 +8,15 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String
-  createdAt    DateTime  @default(now())
-  tasks        Task[]
-  sessions     Session[]
+  id               String           @id @default(cuid())
+  email            String           @unique
+  passwordHash     String
+  createdAt        DateTime         @default(now())
+  tasks            Task[]
+  sessions         Session[]
+  semesters        Semester[]
+  subjects         Subject[]
+  timetableEntries TimetableEntry[]
 }
 
 model Session {
@@ -38,4 +41,60 @@ model Task {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, taskDate])
+}
+
+model Semester {
+  id               String           @id @default(cuid())
+  userId           String
+  name             String
+  startDate        DateTime
+  endDate          DateTime
+  isActive         Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjects         Subject[]
+  timetableEntries TimetableEntry[]
+
+  @@index([userId, isActive])
+}
+
+model Subject {
+  id               String           @id @default(cuid())
+  userId           String
+  semesterId       String
+  name             String
+  shortName        String?
+  code             String?
+  type             String           @default("THEORY")
+  color            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  semester         Semester         @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  timetableEntries TimetableEntry[]
+
+  @@index([userId, semesterId])
+}
+
+model TimetableEntry {
+  id         String   @id @default(cuid())
+  userId     String
+  semesterId String
+  subjectId  String?
+  dayOfWeek  String
+  startTime  String
+  endTime    String
+  type       String   @default("CLASS")
+  room       String?
+  instructor String?
+  title      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  semester   Semester @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  subject    Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+
+  @@index([userId, semesterId, dayOfWeek])
+  @@index([userId, dayOfWeek])
 }
