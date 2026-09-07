@@ -115,6 +115,21 @@ input:focus-visible {
   animation: toast-in 0.18s ease-out;
 }
 
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.popover-enter {
+  animation: popover-in 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Restrained scrollbar for the task list */
 .thin-scroll {
   scrollbar-width: thin;
