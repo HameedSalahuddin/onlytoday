@@ -11,37 +11,62 @@ import {
 } from "@/lib/dates";
 import { CalendarDay } from "@/components/calendar-day";
 import { LockedDay } from "@/components/locked-day";
+import { PastDayPopover } from "@/components/past-day-popover";
 
 interface CalendarProps {
   todayKey: string;
   initialMonth: { year: number; month: number };
-  onSelectPast: (dateKey: string) => void;
+  onSelectPast?: (dateKey: string) => void;
   onSelectToday: () => void;
 }
 
 export function Calendar({
   todayKey,
   initialMonth,
-  onSelectPast,
   onSelectToday,
 }: CalendarProps) {
   const [view, setView] = useState(initialMonth);
   const [lockedKey, setLockedKey] = useState<string | null>(null);
+  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
+  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
 
-  function handleDayClick(dateKey: string) {
+  function handleDayClick(dateKey: string, element?: HTMLElement) {
     const diff = daysBetween(todayKey, dateKey);
+
     if (diff === 0) {
+      // Today clicked
+      setSelectedDateKey(null);
+      setAnchorRect(null);
       onSelectToday();
       return;
     }
+
     if (diff < 0) {
-      onSelectPast(dateKey);
+      // Past date clicked
+      if (selectedDateKey === dateKey) {
+        // Toggle closed when clicking the same date
+        setSelectedDateKey(null);
+        setAnchorRect(null);
+      } else {
+        setSelectedDateKey(dateKey);
+        setAnchorRect(element ? element.getBoundingClientRect() : null);
+      }
       return;
     }
+
+    // Future date clicked
+    setSelectedDateKey(null);
+    setAnchorRect(null);
     setLockedKey(dateKey);
     window.setTimeout(() => {
       setLockedKey((current) => (current === dateKey ? null : current));
     }, 3000);
+  }
+
+  function handleMonthChange(delta: number) {
+    setSelectedDateKey(null);
+    setAnchorRect(null);
+    setView((v) => addMonths(v.year, v.month, delta));
   }
 
   const cells = getMonthGrid(view.year, view.month);
@@ -56,7 +81,7 @@ export function Calendar({
           <button
             type="button"
             aria-label="Previous month"
-            onClick={() => setView((v) => addMonths(v.year, v.month, -1))}
+            onClick={() => handleMonthChange(-1)}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors duration-150 hover:bg-bg2 hover:text-text2"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -64,7 +89,7 @@ export function Calendar({
           <button
             type="button"
             aria-label="Next month"
-            onClick={() => setView((v) => addMonths(v.year, v.month, 1))}
+            onClick={() => handleMonthChange(1)}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors duration-150 hover:bg-bg2 hover:text-text2"
           >
             <ChevronRight className="h-4 w-4" />
@@ -107,7 +132,14 @@ export function Calendar({
               />
             );
           }
-          return <LockedDay key={cell.key} day={cell.day} dateKey={cell.key} onClick={handleDayClick} />;
+          return (
+            <LockedDay
+              key={cell.key}
+              day={cell.day}
+              dateKey={cell.key}
+              onClick={handleDayClick}
+            />
+          );
         })}
       </div>
 
@@ -124,6 +156,16 @@ export function Calendar({
         <Lock className="h-3 w-3 shrink-0" aria-hidden="true" />
         Future dates are locked.
       </p>
+
+      <PastDayPopover
+        isOpen={selectedDateKey !== null}
+        dateKey={selectedDateKey}
+        anchorRect={anchorRect}
+        onClose={() => {
+          setSelectedDateKey(null);
+          setAnchorRect(null);
+        }}
+      />
     </div>
   );
 }

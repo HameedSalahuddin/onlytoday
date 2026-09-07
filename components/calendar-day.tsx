@@ -6,14 +6,15 @@ interface CalendarDayProps {
   day: number;
   dateKey: string;
   isToday: boolean;
-  onClick: (dateKey: string) => void;
+  onClick: (dateKey: string, element?: HTMLElement) => void;
 }
 
 export function CalendarDay({ day, dateKey, isToday, onClick }: CalendarDayProps) {
   return (
     <button
       type="button"
-      onClick={() => onClick(dateKey)}
+      data-calendar-day
+      onClick={(e) => onClick(dateKey, e.currentTarget)}
       aria-label={
         isToday
           ? `${dateKey} (today)`
